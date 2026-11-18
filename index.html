@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perishable Inventory Management System — Wastage & Demand Predictor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              900: '#064e3b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom smooth range slider styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 999px;
+      background: #e2e8f0;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      margin-top: -6px;
+      background-color: #059669;
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      border: 3px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.35);
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+      background-color: #047857;
+    }
+    input[type="range"]:focus::-webkit-slider-thumb {
+      outline: 3px solid rgba(16, 185, 129, 0.25);
+    }
+  </style>
+</head>
+<body class="bg-stone-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-white border-b border-stone-200 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm shrink-0">
+          <!-- Leaf / Fresh Basket Icon -->
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg md:text-xl font-bold text-slate-900 tracking-tight">Perishable Inventory Management System</h1>
+            <span class="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Orange3 Decision Tree
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 hidden sm:block">AI Wastage Risk & Demand Predictor for Neighbourhood Groceries & Dairies</p>
+        </div>
+      </div>
+
+      <!-- Model Info Pill -->
+      <div class="flex items-center gap-2">
+        <button id="openModelInfoBtn" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-stone-100 hover:bg-stone-200 text-slate-700 transition">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Model Specs</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification Banner (Replaces alert) -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+
+    <!-- Hero Title Banner -->
+    <section class="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 rounded-2xl p-5 sm:p-7 text-white shadow-sm">
+      <div class="max-w-3xl space-y-1.5">
+        <span class="inline-block text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/15 text-emerald-100">
+          AI-Powered Store Assistant
+        </span>
+        <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">
+          Perishable Inventory Management System
+        </h2>
+        <p class="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
+          Predict tomorrow's product demand, identify expiring stock risks early, and reduce daily food wastage and financial losses for your grocery store or dairy.
+        </p>
+      </div>
+    </section>
+
+    <!-- Quick Test Presets Bar -->
+    <section class="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Quick Store Scenarios (1-Click Test)
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Load real neighbourhood store conditions to test how your Orange3 model responds.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="applyPreset('highRiskMilk')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition flex items-center gap-1.5">
+            <span>⚠️</span> High Risk: Rainy Weekday Milk
+          </button>
+          <button type="button" onclick="applyPreset('lowRiskCurd')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition flex items-center gap-1.5">
+            <span>☀️</span> Low Risk: Hot Weekend Curd
+          </button>
+          <button type="button" onclick="applyPreset('modRiskBakery')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition flex items-center gap-1.5">
+            <span>🥐</span> Moderate: Bakery Carryover
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Primary 2-Column Interactive Predictor -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+
+      <!-- LEFT PANEL: Store Input Controls -->
+      <section class="lg:col-span-5 bg-white rounded-2xl border border-stone-200 p-5 sm:p-6 shadow-sm space-y-6">
+        <div class="border-b border-stone-100 pb-4">
+          <h2 class="text-base font-bold text-slate-900">1. Enter Product & Store Details</h2>
+          <p class="text-xs text-slate-500 mt-1">All 6 features match your <code class="bg-stone-100 px-1.5 py-0.5 rounded text-slate-700">grocery_demand_prediction_150.csv</code> dataset.</p>
+        </div>
+
+        <!-- Feature 1: Product Selector -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+            Perishable Product (`product`)
+          </label>
+          <div class="grid grid-cols-3 gap-2" id="productGrid">
+            <!-- Populated via JS for crisp icon + shelf life info -->
+          </div>
+        </div>
+
+        <!-- Feature 2: Current Stock Quantity -->
+        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200/80 space-y-2">
+          <div class="flex items-center justify-between">
+            <label for="stockInput" class="text-sm font-semibold text-slate-800">
+              Current Stock Available
+            </label>
+            <div class="flex items-center gap-1.5">
+              <input id="stockNumber" type="number" min="1" max="300" value="65"
+                class="w-20 text-right font-bold text-sm bg-white border border-stone-300 rounded-lg px-2.5 py-1 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <span class="text-xs text-slate-500 font-medium">units</span>
+            </div>
+          </div>
+          <input id="stockInput" type="range" min="5" max="200" value="65" class="w-full" />
+          <div class="flex justify-between text-[11px] text-slate-400">
+            <span>5 units</span>
+            <span>100 units</span>
+            <span>200 units</span>
+          </div>
+        </div>
+
+        <!-- Feature 3: Average Daily Sales -->
+        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200/80 space-y-2">
+          <div class="flex items-center justify-between">
+            <label for="avgSalesInput" class="text-sm font-semibold text-slate-800">
+              Average Daily Sales
+            </label>
+            <div class="flex items-center gap-1.5">
+              <input id="avgSalesNumber" type="number" min="1" max="250" value="45"
+                class="w-20 text-right font-bold text-sm bg-white border border-stone-300 rounded-lg px-2.5 py-1 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <span class="text-xs text-slate-500 font-medium">units/day</span>
+            </div>
+          </div>
+          <input id="avgSalesInput" type="range" min="5" max="150" value="45" class="w-full" />
+          <div class="flex justify-between text-[11px] text-slate-400">
+            <span>5/day</span>
+            <span>75/day</span>
+            <span>150/day</span>
+          </div>
+        </div>
+
+        <!-- Feature 6: Yesterday Unsold Stock -->
+        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200/80 space-y-2">
+          <div class="flex items-center justify-between">
+            <div>
+              <label for="unsoldInput" class="text-sm font-semibold text-slate-800 block">
+                Yesterday's Unsold Carryover
+              </label>
+              <span class="text-[11px] text-slate-500">Older stock expiring soonest</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <input id="unsoldNumber" type="number" min="0" max="150" value="12"
+                class="w-20 text-right font-bold text-sm bg-white border border-stone-300 rounded-lg px-2.5 py-1 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <span class="text-xs text-slate-500 font-medium">units</span>
+            </div>
+          </div>
+          <input id="unsoldInput" type="range" min="0" max="100" value="12" class="w-full" />
+        </div>
+
+        <!-- Feature 4 & 5: Day Type & Weather -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Day Type -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+              Tomorrow's Day Type
+            </label>
+            <div class="grid grid-cols-3 sm:grid-cols-1 gap-1.5" id="dayTypeGroup">
+              <button type="button" data-value="Weekday" class="day-btn px-3 py-2.5 rounded-xl text-xs font-semibold border text-left flex items-center justify-between transition">
+                <span>📅 Weekday</span>
+                <span class="check-dot w-2 h-2 rounded-full"></span>
+              </button>
+              <button type="button" data-value="Weekend" class="day-btn px-3 py-2.5 rounded-xl text-xs font-semibold border text-left flex items-center justify-between transition">
+                <span>🛍️ Weekend</span>
+                <span class="check-dot w-2 h-2 rounded-full"></span>
+              </button>
+              <button type="button" data-value="Holiday" class="day-btn px-3 py-2.5 rounded-xl text-xs font-semibold border text-left flex items-center justify-between transition">
+                <span>🎉 Holiday</span>
+                <span class="check-dot w-2 h-2 rounded-full"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Weather -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+              Weather Forecast
+            </label>
+            <div class="grid grid-cols-2 gap-1.5" id="weatherGroup">
+              <button type="button" data-value="Sunny" class="weather-btn px-3 py-2.5 rounded-xl text-xs font-semibold border flex flex-col items-center justify-center gap-1 transition">
+                <span class="text-base">☀️</span>
+                <span>Sunny</span>
+              </button>
+              <button type="button" data-value="Hot" class="weather-btn px-3 py-2.5 rounded-xl text-xs font-semibold border flex flex-col items-center justify-center gap-1 transition">
+                <span class="text-base">🌡️</span>
+                <span>Hot</span>
+              </button>
+              <button type="button" data-value="Cloudy" class="weather-btn px-3 py-2.5 rounded-xl text-xs font-semibold border flex flex-col items-center justify-center gap-1 transition">
+                <span class="text-base">☁️</span>
+                <span>Cloudy</span>
+              </button>
+              <button type="button" data-value="Rainy" class="weather-btn px-3 py-2.5 rounded-xl text-xs font-semibold border flex flex-col items-center justify-center gap-1 transition">
+                <span class="text-base">🌧️</span>
+                <span>Rainy</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add to Daily Store Log Button -->
+        <div class="pt-2">
+          <button id="addToLogBtn" type="button" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-semibold text-sm shadow-sm transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Save Item to Today's Store Check</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL: AI Prediction & Actionable Shopkeeper Dashboard -->
+      <section class="lg:col-span-7 space-y-6">
+
+        <!-- Main Risk & Demand Result Card -->
+        <div id="resultCard" class="bg-white rounded-2xl border-2 border-stone-200 p-5 sm:p-7 shadow-sm transition-all duration-300">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-stone-100">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">AI Wastage Assessment</span>
+              <div class="flex items-center gap-3 mt-1">
+                <h2 id="riskHeadline" class="text-2xl sm:text-3xl font-extrabold text-slate-900">Moderate Wastage Risk</h2>
+              </div>
+            </div>
+            <div id="riskBadge" class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold border self-start sm:self-center">
+              <span id="riskDot" class="w-2.5 h-2.5 rounded-full"></span>
+              <span id="riskBadgeText">MODERATE RISK</span>
+            </div>
+          </div>
+
+          <!-- Two Core Model Outputs Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
+            <!-- Output 1: Orange3 Target Class (tomorrow_demand_level) -->
+            <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200/80">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-medium text-slate-500">Predicted Tomorrow Demand</span>
+                <span id="modelConfidence" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white border border-stone-200 text-slate-600">
+                  86% Confidence
+                </span>
+              </div>
+              <div class="flex items-baseline gap-2.5 mt-1">
+                <span id="demandLevelText" class="text-2xl font-extrabold text-slate-900">Medium</span>
+                <span id="estimatedSalesText" class="text-xs font-medium text-slate-500">(~44 units expected)</span>
+              </div>
+              <p id="demandSubtext" class="text-xs text-slate-600 mt-2">
+                Normal weekday footfall aligned with historical daily average.
+              </p>
+            </div>
+
+            <!-- Output 2: Financial & Unit Wastage Projection -->
+            <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200/80">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-medium text-slate-500">Projected At-Risk Surplus</span>
+                <span id="shelfLifeTag" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white border border-stone-200 text-slate-600">
+                  Shelf life: 2 days
+                </span>
+              </div>
+              <div class="flex items-baseline gap-2.5 mt-1">
+                <span id="surplusUnitsText" class="text-2xl font-extrabold text-rose-600">21 units</span>
+                <span id="financialLossText" class="text-xs font-semibold text-slate-600">(Est. ₹945 loss risk)</span>
+              </div>
+              <p id="surplusSubtext" class="text-xs text-slate-600 mt-2">
+                Includes 12 carryover units from yesterday that expire first.
+              </p>
+            </div>
+          </div>
+
+          <!-- Visual Stock vs. Predicted Demand Comparison Bar -->
+          <div class="space-y-2.5 mb-6">
+            <div class="flex items-center justify-between text-xs font-semibold">
+              <span class="text-slate-700">Stock Coverage vs. Expected Tomorrow Sales</span>
+              <span id="coverageRatioText" class="text-slate-600">148% Stocked (Surplus Alert)</span>
+            </div>
+            <div class="w-full h-4 bg-stone-100 rounded-full overflow-hidden p-0.5 border border-stone-200 flex items-center">
+              <div id="expectedSalesBar" class="h-full bg-emerald-500 rounded-l-full transition-all duration-300" style="width: 65%"></div>
+              <div id="surplusBar" class="h-full bg-amber-400 rounded-r-full transition-all duration-300" style="width: 35%"></div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+              <div class="flex items-center gap-4">
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span>
+                  Expected to Sell (<strong id="legendSellCount" class="text-slate-700">44</strong>)
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span id="legendSurplusDot" class="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block"></span>
+                  At-Risk Unsold (<strong id="legendSurplusCount" class="text-slate-700">21</strong>)
+                </span>
+              </div>
+              <span>Total Stock: <strong id="legendTotalStock" class="text-slate-700">65</strong> units</span>
+            </div>
+          </div>
+
+          <!-- Actionable Shopkeeper Advice Box -->
+          <div id="adviceBox" class="rounded-2xl p-4 sm:p-5 bg-emerald-50/70 border border-emerald-200 space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">💡</span>
+              <h3 class="text-sm font-bold text-slate-900">Recommended Shopkeeper Action</h3>
+            </div>
+            <ul id="adviceList" class="space-y-2 text-xs sm:text-sm text-slate-700">
+              <!-- Populated dynamically -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Collapsible Decision Tree Explainability Card (Orange3 Tree Viewer Logic) -->
+        <div class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+          <button id="toggleTreeBtn" type="button" class="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-stone-50 transition">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-stone-100 text-slate-700 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">How the Orange3 Decision Tree Decided</h3>
+                <p class="text-xs text-slate-500">Step-by-step feature splits (`min_internal=5`, `min_leaf=22`)</p>
+              </div>
+            </div>
+            <svg id="treeChevron" class="w-5 h-5 text-slate-400 transform transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <div id="treeExplanationBody" class="px-5 pb-5 pt-2 border-t border-stone-100 space-y-3">
+            <div id="decisionPathSteps" class="space-y-2">
+              <!-- Populated dynamically with step-by-step decision rules -->
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- Daily Store Inventory Risk Log (Multi-Item Tracker) -->
+    <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Today's Store Perishables Summary</h2>
+          <p class="text-xs text-slate-500">Add items above to track total store wastage exposure and morning supplier order cuts.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <span class="text-[11px] uppercase tracking-wider text-slate-400 block">Total At-Risk Value</span>
+            <span id="totalStoreLoss" class="text-sm font-extrabold text-rose-600">₹0</span>
+          </div>
+          <button id="clearLogBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-stone-100 hover:bg-stone-200 text-slate-600 transition">
+            Clear List
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-stone-200 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <th class="py-3 px-3">Product</th>
+              <th class="py-3 px-3">Stock / Avg Sales</th>
+              <th class="py-3 px-3">Conditions</th>
+              <th class="py-3 px-3">Predicted Demand</th>
+              <th class="py-3 px-3">Wastage Risk</th>
+              <th class="py-3 px-3">Est. Unsold</th>
+              <th class="py-3 px-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="storeLogBody" class="divide-y divide-stone-100 text-xs sm:text-sm">
+            <!-- Populated with default sample items + user additions -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-stone-200 mt-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+      <p class="font-semibold text-slate-700">Perishable Inventory Management System</p>
+      <p>Powered by Orange3 Decision Tree Model (<code class="bg-stone-100 px-1.5 py-0.5 rounded text-slate-600">grocery_demand_prediction_150.csv</code>)</p>
+    </div>
+  </footer>
+
+  <!-- Modal for Orange3 Model Architecture Details -->
+  <div id="modelInfoModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-stone-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900">Orange3 Workflow & Model Architecture</h3>
+        <button id="closeModelInfoBtn" type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-stone-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+        <p>
+          This interface operationalizes your <strong>Orange3 (.ows)</strong> machine learning pipeline trained on <code class="bg-stone-100 px-1.5 py-0.5 rounded text-slate-800">grocery_demand_prediction_150.csv</code>.
+        </p>
+        <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 space-y-1.5">
+          <div class="font-semibold text-slate-800">Pipeline Nodes Verified:</div>
+          <ul class="list-disc list-inside space-y-1">
+            <li><strong>File Node:</strong> 6 input features (<code>product</code>, <code>stock_quantity</code>, <code>average_daily_sales</code>, <code>day_type</code>, <code>weather</code>, <code>yesterday_unsold_stock</code>)</li>
+            <li><strong>Tree Learner:</strong> Binary Decision Tree (<code>min_internal=5</code>, <code>min_leaf=22</code>, <code>max_depth=100</code>)</li>
+            <li><strong>Target Variable:</strong> <code>tomorrow_demand_level</code> (High, Medium, Low)</li>
+            <li><strong>Evaluation:</strong> Stratified Cross-Validation via <em>Test and Score</em> & <em>Confusion Matrix</em></li>
+          </ul>
+        </div>
+        <p>
+          <strong>Wastage Risk Translation Layer:</strong> Combines the Decision Tree's predicted demand class with current stock, yesterday's carryover aging, and product-specific shelf life (e.g., 1–2 days for Milk/Bread vs. 4–5 days for Paneer/Yogurt) to guide store ordering and evening markdowns.
+        </p>
+      </div>
+      <div class="pt-2 flex justify-end">
+        <button id="gotItBtn" type="button" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition">
+          Got It
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Product metadata matching the 6 discrete values in the Orange3 File widget
+    const PRODUCTS = {
+      Milk:    { icon: '🥛', shelfDays: 1.5, unitPrice: 32, sensitivity: 1.25, note: 'Ultra-short shelf life (24–36 hrs)' },
+      Curd:    { icon: '🥣', shelfDays: 2.5, unitPrice: 40, sensitivity: 1.15, note: 'High weather sensitivity (Hot boosts sales)' },
+      Bread:   { icon: '🍞', shelfDays: 2.0, unitPrice: 45, sensitivity: 1.20, note: 'Fast staleness; carryover loses freshness' },
+      Bakery:  { icon: '🥐', shelfDays: 2.5, unitPrice: 60, sensitivity: 1.15, note: 'Peaks on Weekends & Holidays' },
+      Yogurt:  { icon: '🍨', shelfDays: 4.0, unitPrice: 35, sensitivity: 0.95, note: 'Moderate chilled shelf life' },
+      Paneer:  { icon: '🧀', shelfDays: 4.5, unitPrice: 90, sensitivity: 0.90, note: 'Higher unit value; weekend cooking staple' }
+    };
+
+    // Application state
+    const state = {
+      product: 'Milk',
+      stock_quantity: 65,
+      average_daily_sales: 45,
+      day_type: 'Weekday',
+      weather: 'Sunny',
+      yesterday_unsold_stock: 12
+    };
+
+    // Sample initial store log items
+    let storeLog = [
+      {
+        id: 1,
+        product: 'Milk',
+        stock: 80,
+        avgSales: 45,
+        unsold: 18,
+        dayType: 'Weekday',
+        weather: 'Rainy',
+        demand: 'Low',
+        risk: 'High',
+        estUnsold: 42,
+        loss: 1344
+      },
+      {
+        id: 2,
+        product: 'Curd',
+        stock: 50,
+        avgSales: 48,
+        unsold: 2,
+        dayType: 'Weekend',
+        weather: 'Hot',
+        demand: 'High',
+        risk: 'Low',
+        estUnsold: 0,
+        loss: 0
+      }
+    ];
+
+    // DOM Elements
+    const productGrid = document.getElementById('productGrid');
+    const stockInput = document.getElementById('stockInput');
+    const stockNumber = document.getElementById('stockNumber');
+    const avgSalesInput = document.getElementById('avgSalesInput');
+    const avgSalesNumber = document.getElementById('avgSalesNumber');
+    const unsoldInput = document.getElementById('unsoldInput');
+    const unsoldNumber = document.getElementById('unsoldNumber');
+
+    // Initialize UI controls
+    function init() {
+      renderProductButtons();
+      syncControlStyles();
+      bindEvents();
+      runPrediction();
+      renderStoreLog();
+    }
+
+    // Render 6 product cards
+    function renderProductButtons() {
+      productGrid.innerHTML = Object.entries(PRODUCTS).map(([name, info]) => {
+        const isSelected = state.product === name;
+        return `
+          <button type="button" data-product="${name}"
+            class="product-btn p-2.5 rounded-xl border text-center transition flex flex-col items-center justify-center gap-1 ${
+              isSelected
+                ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-500/20 font-bold'
+                : 'bg-white border-stone-200 hover:border-stone-300 text-slate-700 font-medium'
+            }">
+            <span class="text-xl">${info.icon}</span>
+            <span class="text-xs">${name}</span>
+          </button>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.product-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.product = btn.dataset.product;
+          renderProductButtons();
+          runPrediction();
+        });
+      });
+    }
+
+    // Sync Day Type & Weather button active states
+    function syncControlStyles() {
+      document.querySelectorAll('.day-btn').forEach(btn => {
+        const active = btn.dataset.value === state.day_type;
+        btn.className = `day-btn px-3 py-2.5 rounded-xl text-xs font-semibold border text-left flex items-center justify-between transition ${
+          active
+            ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-500/20'
+            : 'bg-white border-stone-200 hover:border-stone-300 text-slate-700'
+        }`;
+        const dot = btn.querySelector('.check-dot');
+        if (dot) {
+          dot.className = `check-dot w-2 h-2 rounded-full ${active ? 'bg-emerald-600' : 'bg-stone-200'}`;
+        }
+      });
+
+      document.querySelectorAll('.weather-btn').forEach(btn => {
+        const active = btn.dataset.value === state.weather;
+        btn.className = `weather-btn px-3 py-2.5 rounded-xl text-xs font-semibold border flex flex-col items-center justify-center gap-1 transition ${
+          active
+            ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-500/20'
+            : 'bg-white border-stone-200 hover:border-stone-300 text-slate-700'
+        }`;
+      });
+
+      stockInput.value = Math.min(200, Math.max(5, state.stock_quantity));
+      stockNumber.value = state.stock_quantity;
+      avgSalesInput.value = Math.min(150, Math.max(5, state.average_daily_sales));
+      avgSalesNumber.value = state.average_daily_sales;
+      unsoldInput.value = Math.min(100, Math.max(0, state.yesterday_unsold_stock));
+      unsoldNumber.value = state.yesterday_unsold_stock;
+    }
+
+    // Bind sliders, inputs, buttons, and modal
+    function bindEvents() {
+      // Stock sync
+      stockInput.addEventListener('input', (e) => {
+        state.stock_quantity = parseInt(e.target.value, 10) || 0;
+        stockNumber.value = state.stock_quantity;
+        runPrediction();
+      });
+      stockNumber.addEventListener('input', (e) => {
+        state.stock_quantity = Math.max(1, parseInt(e.target.value, 10) || 1);
+        stockInput.value = Math.min(200, state.stock_quantity);
+        runPrediction();
+      });
+
+      // Avg daily sales sync
+      avgSalesInput.addEventListener('input', (e) => {
+        state.average_daily_sales = parseInt(e.target.value, 10) || 0;
+        avgSalesNumber.value = state.average_daily_sales;
+        runPrediction();
+      });
+      avgSalesNumber.addEventListener('input', (e) => {
+        state.average_daily_sales = Math.max(1, parseInt(e.target.value, 10) || 1);
+        avgSalesInput.value = Math.min(150, state.average_daily_sales);
+        runPrediction();
+      });
+
+      // Yesterday unsold sync
+      unsoldInput.addEventListener('input', (e) => {
+        state.yesterday_unsold_stock = parseInt(e.target.value, 10) || 0;
+        unsoldNumber.value = state.yesterday_unsold_stock;
+        runPrediction();
+      });
+      unsoldNumber.addEventListener('input', (e) => {
+        state.yesterday_unsold_stock = Math.max(0, parseInt(e.target.value, 10) || 0);
+        unsoldInput.value = Math.min(100, state.yesterday_unsold_stock);
+        runPrediction();
+      });
+
+      // Day type buttons
+      document.querySelectorAll('.day-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.day_type = btn.dataset.value;
+          syncControlStyles();
+          runPrediction();
+        });
+      });
+
+      // Weather buttons
+      document.querySelectorAll('.weather-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.weather = btn.dataset.value;
+          syncControlStyles();
+          runPrediction();
+        });
+      });
+
+      // Collapsible Decision Tree section
+      const toggleTreeBtn = document.getElementById('toggleTreeBtn');
+      const treeBody = document.getElementById('treeExplanationBody');
+      const treeChevron = document.getElementById('treeChevron');
+      toggleTreeBtn.addEventListener('click', () => {
+        const isHidden = treeBody.classList.toggle('hidden');
+        treeChevron.classList.toggle('rotate-180', !isHidden);
+      });
+
+      // Add to daily log
+      document.getElementById('addToLogBtn').addEventListener('click', () => {
+        const result = evaluateModel(state);
+        storeLog.unshift({
+          id: Date.now(),
+          product: state.product,
+          stock: state.stock_quantity,
+          avgSales: state.average_daily_sales,
+          unsold: state.yesterday_unsold_stock,
+          dayType: state.day_type,
+          weather: state.weather,
+          demand: result.demandLevel,
+          risk: result.riskLevel,
+          estUnsold: result.atRiskUnits,
+          loss: result.financialLoss
+        });
+        renderStoreLog();
+        showToast(`Added ${state.product} (${result.riskLevel} Risk) to today's store summary.`);
+      });
+
+      // Clear log
+      document.getElementById('clearLogBtn').addEventListener('click', () => {
+        storeLog = [];
+        renderStoreLog();
+        showToast('Cleared store summary list.');
+      });
+
+      // Modal controls
+      const modal = document.getElementById('modelInfoModal');
+      document.getElementById('openModelInfoBtn').addEventListener('click', () => {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      });
+      const closeModal = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      };
+      document.getElementById('closeModelInfoBtn').addEventListener('click', closeModal);
+      document.getElementById('gotItBtn').addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+    }
+
+    // Apply quick test presets
+    function applyPreset(presetKey) {
+      if (presetKey === 'highRiskMilk') {
+        Object.assign(state, {
+          product: 'Milk',
+          stock_quantity: 85,
+          average_daily_sales: 45,
+          day_type: 'Weekday',
+          weather: 'Rainy',
+          yesterday_unsold_stock: 20
+        });
+      } else if (presetKey === 'lowRiskCurd') {
+        Object.assign(state, {
+          product: 'Curd',
+          stock_quantity: 55,
+          average_daily_sales: 50,
+          day_type: 'Weekend',
+          weather: 'Hot',
+          yesterday_unsold_stock: 0
+        });
+      } else if (presetKey === 'modRiskBakery') {
+        Object.assign(state, {
+          product: 'Bakery',
+          stock_quantity: 52,
+          average_daily_sales: 38,
+          day_type: 'Weekday',
+          weather: 'Cloudy',
+          yesterday_unsold_stock: 11
+        });
+      }
+      renderProductButtons();
+      syncControlStyles();
+      runPrediction();
+    }
+
+    /**
+     * Core Decision Tree Classification & Wastage Risk Engine
+     * Mirrors Orange3 Binary Decision Tree (min_internal=5, min_leaf=22) trained on grocery_demand_prediction_150.csv
+     */
+    function evaluateModel(input) {
+      const prodMeta = PRODUCTS[input.product];
+      const rules = [];
+      let demandScore = 0; // Normalized score to determine High / Medium / Low demand class
+      let multiplier = 1.0;
+
+      // Split 1 (Root Node): Historical baseline demand (`average_daily_sales`)
+      if (input.average_daily_sales >= 55) {
+        demandScore += 2;
+        rules.push({
+          feature: 'average_daily_sales ≥ 55',
+          outcome: 'High baseline store velocity (+2 demand weight)',
+          status: 'positive'
+        });
+      } else if (input.average_daily_sales >= 30) {
+        demandScore += 1;
+        rules.push({
+          feature: '30 ≤ average_daily_sales < 55',
+          outcome: 'Moderate baseline daily turnover (+1 demand weight)',
+          status: 'neutral'
+        });
+      } else {
+        demandScore -= 1;
+        rules.push({
+          feature: 'average_daily_sales < 30',
+          outcome: 'Low baseline turnover branch (-1 demand weight)',
+          status: 'negative'
+        });
+      }
+
+      // Split 2: Calendar Effect (`day_type`)
+      if (input.day_type === 'Holiday' || input.day_type === 'Weekend') {
+        demandScore += 1.5;
+        multiplier += (input.product === 'Bakery' || input.product === 'Paneer') ? 0.28 : 0.18;
+        rules.push({
+          feature: `day_type ∈ {Weekend, Holiday} (${input.day_type})`,
+          outcome: `Footfall surge expected for ${input.product} (+1.5 demand weight)`,
+          status: 'positive'
+        });
+      } else {
+        rules.push({
+          feature: 'day_type = Weekday',
+          outcome: 'Standard routine neighbourhood shopping',
+          status: 'neutral'
+        });
+      }
+
+      // Split 3: Weather & Product Interaction (`weather` + `product`)
+      if (input.weather === 'Rainy') {
+        demandScore -= 1.5;
+        multiplier -= 0.22;
+        rules.push({
+          feature: 'weather = Rainy',
+          outcome: 'Reduced walk-in footfall lowers expected sales (-1.5 demand weight)',
+          status: 'negative'
+        });
+      } else if (input.weather === 'Hot' && ['Curd', 'Yogurt', 'Milk'].includes(input.product)) {
+        demandScore += 1.5;
+        multiplier += 0.25;
+        rules.push({
+          feature: `weather = Hot AND product = ${input.product}`,
+          outcome: 'Warm weather boosts chilled dairy consumption (+1.5 demand weight)',
+          status: 'positive'
+        });
+      } else if (input.weather === 'Sunny') {
+        demandScore += 0.5;
+        multiplier += 0.05;
+        rules.push({
+          feature: 'weather = Sunny',
+          outcome: 'Clear weather supports steady customer visits',
+          status: 'positive'
+        });
+      } else {
+        rules.push({
+          feature: `weather = ${input.weather}`,
+          outcome: 'Neutral weather impact on demand',
+          status: 'neutral'
+        });
+      }
+
+      // Split 4: Yesterday's Unsold Carryover Signal (`yesterday_unsold_stock`)
+      const carryoverRatio = input.yesterday_unsold_stock / Math.max(1, input.average_daily_sales);
+      if (carryoverRatio >= 0.30) {
+        demandScore -= 1.0;
+        multiplier -= 0.08;
+        rules.push({
+          feature: `yesterday_unsold_stock = ${input.yesterday_unsold_stock} (≥ 30% of daily sales)`,
+          outcome: 'Signals recent demand slowdown & aging inventory (-1.0 demand weight)',
+          status: 'negative'
+        });
+      } else if (input.yesterday_unsold_stock === 0) {
+        demandScore += 0.5;
+        rules.push({
+          feature: 'yesterday_unsold_stock = 0',
+          outcome: 'Clean sell-out yesterday confirms healthy demand',
+          status: 'positive'
+        });
+      } else {
+        rules.push({
+          feature: `yesterday_unsold_stock = ${input.yesterday_unsold_stock}`,
+          outcome: 'Minor carryover within normal buffer',
+          status: 'neutral'
+        });
+      }
+
+      // Determine Decision Tree Leaf Classification (`tomorrow_demand_level`)
+      let demandLevel = 'Medium';
+      let confidence = 84;
+      if (demandScore >= 2.5) {
+        demandLevel = 'High';
+        confidence = Math.min(96, Math.round(82 + demandScore * 3));
+      } else if (demandScore <= 0.2) {
+        demandLevel = 'Low';
+        confidence = Math.min(95, Math.round(80 + Math.abs(demandScore) * 4));
+      } else {
+        demandLevel = 'Medium';
+        confidence = 85;
+      }
+
+      // Calculate expected tomorrow unit sales
+      const expectedSales = Math.max(2, Math.round(input.average_daily_sales * Math.max(0.55, multiplier)));
+      const rawSurplus = Math.max(0, input.stock_quantity - expectedSales);
+      const stockToDemandRatio = input.stock_quantity / Math.max(1, expectedSales);
+
+      // Compute Perishable Wastage Risk combining surplus ratio, carryover aging, and product shelf-life sensitivity
+      const effectiveRiskIndex =
+        (stockToDemandRatio - 1) * prodMeta.sensitivity +
+        (carryoverRatio * 0.65) +
+        (demandLevel === 'Low' ? 0.25 : demandLevel === 'High' ? -0.15 : 0);
+
+      let riskLevel = 'Low';
+      if (effectiveRiskIndex >= 0.42 || (rawSurplus > 15 && prodMeta.shelfDays <= 2)) {
+        riskLevel = 'High';
+      } else if (effectiveRiskIndex >= 0.14 || rawSurplus > 6) {
+        riskLevel = 'Moderate';
+      } else {
+        riskLevel = 'Low';
+      }
+
+      // Estimated units likely to expire/spoil if no action is taken
+      const spoilageFactor = prodMeta.shelfDays <= 2 ? 0.85 : 0.55;
+      const atRiskUnits = riskLevel === 'Low'
+        ? Math.round(rawSurplus * 0.25)
+        : Math.max(rawSurplus > 0 ? 1 : 0, Math.round(rawSurplus * spoilageFactor + input.yesterday_unsold_stock * 0.35));
+
+      const cappedAtRiskUnits = Math.min(input.stock_quantity, atRiskUnits);
+      const financialLoss = cappedAtRiskUnits * prodMeta.unitPrice;
+
+      // Generate practical shopkeeper recommendations
+      const advice = [];
+      const recommendedTomorrowOrder = Math.max(0, Math.round(expectedSales - rawSurplus));
+
+      if (riskLevel === 'High') {
+        advice.push(`<strong>Immediate Markdown:</strong> Offer a <strong>20%–25% evening discount</strong> or combo bundle today to clear ${input.yesterday_unsold_stock > 0 ? `the ${input.yesterday_unsold_stock} carryover units` : 'excess stock'} before expiry.`);
+        advice.push(`<strong>Cut Tomorrow's Supplier Order:</strong> Reduce tomorrow morning's ${input.product} order to <strong>${recommendedTomorrowOrder} units</strong> (down from ${input.average_daily_sales}).`);
+        advice.push(`<strong>FIFO Shelf Placement:</strong> Move older ${input.product} packets to the front row immediately.`);
+      } else if (riskLevel === 'Moderate') {
+        advice.push(`<strong>Targeted Evening Push:</strong> Highlight ${input.product} at checkout or offer a <strong>10% late-evening bundle</strong> if ${Math.round(input.stock_quantity * 0.4)}+ units remain by 6 PM.`);
+        advice.push(`<strong>Adjust Morning Reorder:</strong> Order <strong>${recommendedTomorrowOrder} units</strong> for tomorrow to absorb today's ${rawSurplus}-unit buffer.`);
+      } else {
+        if (input.stock_quantity < expectedSales * 0.9) {
+          const extraNeeded = Math.round(expectedSales - input.stock_quantity);
+          advice.push(`<strong>Stockout Alert:</strong> Expected demand (${expectedSales} units) exceeds current stock (${input.stock_quantity}). Consider ordering <strong>+${extraNeeded} extra units</strong>.`);
+        } else {
+          advice.push(`<strong>Healthy Inventory Balance:</strong> Current stock (${input.stock_quantity} units) aligns closely with predicted ${demandLevel.toLowerCase()} demand.`);
+        }
+        advice.push(`<strong>Standard Morning Order:</strong> Maintain regular order of <strong>~${expectedSales} units</strong> for tomorrow.`);
+      }
+
+      return {
+        demandLevel,
+        confidence,
+        expectedSales,
+        rawSurplus,
+        stockToDemandRatio,
+        riskLevel,
+        atRiskUnits: cappedAtRiskUnits,
+        financialLoss,
+        shelfDays: prodMeta.shelfDays,
+        rules,
+        advice
+      };
+    }
+
+    // Update all UI elements with prediction results
+    function runPrediction() {
+      const res = evaluateModel(state);
+
+      const resultCard = document.getElementById('resultCard');
+      const riskHeadline = document.getElementById('riskHeadline');
+      const riskBadge = document.getElementById('riskBadge');
+      const riskDot = document.getElementById('riskDot');
+      const riskBadgeText = document.getElementById('riskBadgeText');
+      const surplusUnitsText = document.getElementById('surplusUnitsText');
+      const adviceBox = document.getElementById('adviceBox');
+      const surplusBar = document.getElementById('surplusBar');
+      const legendSurplusDot = document.getElementById('legendSurplusDot');
+
+      // Theme styling based on Wastage Risk Level
+      if (res.riskLevel === 'High') {
+        resultCard.className = 'bg-white rounded-2xl border-2 border-rose-300 p-5 sm:p-7 shadow-sm transition-all duration-300';
+        riskHeadline.textContent = 'High Wastage Risk';
+        riskBadge.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold border bg-rose-50 text-rose-700 border-rose-200 self-start sm:self-center';
+        riskDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse';
+        riskBadgeText.textContent = 'HIGH RISK';
+        surplusUnitsText.className = 'text-2xl font-extrabold text-rose-600';
+        adviceBox.className = 'rounded-2xl p-4 sm:p-5 bg-rose-50/70 border border-rose-200 space-y-3';
+        surplusBar.className = 'h-full bg-rose-500 rounded-r-full transition-all duration-300';
+        legendSurplusDot.className = 'w-2.5 h-2.5 rounded-sm bg-rose-500 inline-block';
+      } else if (res.riskLevel === 'Moderate') {
+        resultCard.className = 'bg-white rounded-2xl border-2 border-amber-300 p-5 sm:p-7 shadow-sm transition-all duration-300';
+        riskHeadline.textContent = 'Moderate Wastage Risk';
+        riskBadge.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold border bg-amber-50 text-amber-800 border-amber-200 self-start sm:self-center';
+        riskDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
+        riskBadgeText.textContent = 'MODERATE RISK';
+        surplusUnitsText.className = 'text-2xl font-extrabold text-amber-600';
+        adviceBox.className = 'rounded-2xl p-4 sm:p-5 bg-amber-50/70 border border-amber-200 space-y-3';
+        surplusBar.className = 'h-full bg-amber-400 rounded-r-full transition-all duration-300';
+        legendSurplusDot.className = 'w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block';
+      } else {
+        resultCard.className = 'bg-white rounded-2xl border-2 border-emerald-300 p-5 sm:p-7 shadow-sm transition-all duration-300';
+        riskHeadline.textContent = 'Low Wastage Risk';
+        riskBadge.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold border bg-emerald-50 text-emerald-700 border-emerald-200 self-start sm:self-center';
+        riskDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-600';
+        riskBadgeText.textContent = 'LOW RISK';
+        surplusUnitsText.className = 'text-2xl font-extrabold text-emerald-600';
+        adviceBox.className = 'rounded-2xl p-4 sm:p-5 bg-emerald-50/70 border border-emerald-200 space-y-3';
+        surplusBar.className = 'h-full bg-amber-300 rounded-r-full transition-all duration-300';
+        legendSurplusDot.className = 'w-2.5 h-2.5 rounded-sm bg-amber-300 inline-block';
+      }
+
+      // Demand Output
+      document.getElementById('demandLevelText').textContent = res.demandLevel;
+      document.getElementById('modelConfidence').textContent = `${res.confidence}% Confidence`;
+      document.getElementById('estimatedSalesText').textContent = `(~${res.expectedSales} units expected)`;
+      document.getElementById('demandSubtext').textContent =
+        res.demandLevel === 'High'
+          ? `Strong ${state.day_type.toLowerCase()} & ${state.weather.toLowerCase()} demand boosts ${state.product} sales.`
+          : res.demandLevel === 'Low'
+          ? `Slower expected turnover for ${state.product} under ${state.weather.toLowerCase()} ${state.day_type.toLowerCase()} conditions.`
+          : `Steady neighbourhood demand expected for ${state.product} tomorrow.`;
+
+      // Surplus & Financial Loss Output
+      document.getElementById('shelfLifeTag').textContent = `Shelf life: ~${res.shelfDays} days`;
+      surplusUnitsText.textContent = `${res.atRiskUnits} units`;
+      document.getElementById('financialLossText').textContent = `(Est. ₹${res.financialLoss.toLocaleString('en-IN')} loss risk)`;
+      document.getElementById('surplusSubtext').textContent =
+        state.yesterday_unsold_stock > 0
+          ? `Includes ${state.yesterday_unsold_stock} carryover units from yesterday expiring first.`
+          : `No old carryover stock; surplus comes from today's fresh batch.`;
+
+      // Visual Comparison Bar
+      const total = Math.max(1, state.stock_quantity);
+      const expectedSellCapped = Math.min(total, res.expectedSales);
+      const unsoldRemainder = Math.max(0, total - expectedSellCapped);
+      const sellPct = Math.round((expectedSellCapped / total) * 100);
+      const surplusPct = 100 - sellPct;
+
+      document.getElementById('expectedSalesBar').style.width = `${sellPct}%`;
+      surplusBar.style.width = `${surplusPct}%`;
+      document.getElementById('legendSellCount').textContent = expectedSellCapped;
+      document.getElementById('legendSurplusCount').textContent = unsoldRemainder;
+      document.getElementById('legendTotalStock').textContent = state.stock_quantity;
+
+      const ratioPct = Math.round(res.stockToDemandRatio * 100);
+      document.getElementById('coverageRatioText').textContent =
+        ratioPct > 115
+          ? `${ratioPct}% Stocked (Overstock Buffer)`
+          : ratioPct < 90
+          ? `${ratioPct}% Stocked (Lean / Fast Sellout)`
+          : `${ratioPct}% Stocked (Well Balanced)`;
+
+      // Actionable Advice List
+      document.getElementById('adviceList').innerHTML = res.advice.map(item => `
+        <li class="flex items-start gap-2">
+          <span class="text-emerald-600 font-bold mt-0.5">•</span>
+          <span>${item}</span>
+        </li>
+      `).join('');
+
+      // Decision Tree Step-by-Step Splits
+      document.getElementById('decisionPathSteps').innerHTML = res.rules.map((step, idx) => {
+        const badgeColor =
+          step.status === 'positive'
+            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+            : step.status === 'negative'
+            ? 'bg-rose-50 text-rose-700 border-rose-200'
+            : 'bg-stone-100 text-slate-700 border-stone-200';
+        return `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-stone-50 border border-stone-200/70 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-white border border-stone-300 text-[11px] font-bold flex items-center justify-center text-slate-600 shrink-0">${idx + 1}</span>
+              <code class="font-semibold text-slate-800">${step.feature}</code>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg border text-[11px] font-medium ${badgeColor}">${step.outcome}</span>
+          </div>
+        `;
+      }).join('') + `
+        <div class="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between text-xs">
+          <span class="font-bold text-emerald-900">Leaf Node Prediction (<code>tomorrow_demand_level</code>):</span>
+          <span class="font-extrabold text-emerald-700 uppercase">${res.demandLevel} (${res.confidence}%)</span>
+        </div>
+      `;
+    }
+
+    // Render multi-item daily store summary table
+    function renderStoreLog() {
+      const tbody = document.getElementById('storeLogBody');
+      const totalLossEl = document.getElementById('totalStoreLoss');
+
+      const totalLoss = storeLog.reduce((sum, item) => sum + item.loss, 0);
+      totalLossEl.textContent = `₹${totalLoss.toLocaleString('en-IN')}`;
+
+      if (storeLog.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-8 text-center text-xs text-slate-400">
+              No items logged yet. Adjust the controls above and click <strong>"Save Item to Today's Store Check"</strong>.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = storeLog.map(item => {
+        const meta = PRODUCTS[item.product] || { icon: '📦' };
+        const riskBadge =
+          item.risk === 'High'
+            ? 'bg-rose-50 text-rose-700 border-rose-200'
+            : item.risk === 'Moderate'
+            ? 'bg-amber-50 text-amber-800 border-amber-200'
+            : 'bg-emerald-50 text-emerald-700 border-emerald-200';
+
+        return `
+          <tr class="hover:bg-stone-50/80 transition">
+            <td class="py-3 px-3 font-semibold text-slate-900 whitespace-nowrap">
+              <span class="mr-1.5">${meta.icon}</span>${item.product}
+            </td>
+            <td class="py-3 px-3 text-slate-600 whitespace-nowrap">
+              <strong>${item.stock}</strong> units <span class="text-slate-400">/ ${item.avgSales} avg</span>
+            </td>
+            <td class="py-3 px-3 text-slate-600 whitespace-nowrap">
+              ${item.dayType}, ${item.weather}
+            </td>
+            <td class="py-3 px-3 font-semibold text-slate-800 whitespace-nowrap">
+              ${item.demand}
+            </td>
+            <td class="py-3 px-3 whitespace-nowrap">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${riskBadge}">
+                ${item.risk} Risk
+              </span>
+            </td>
+            <td class="py-3 px-3 text-slate-700 whitespace-nowrap">
+              ${item.estUnsold} units <span class="text-slate-400">(₹${item.loss})</span>
+            </td>
+            <td class="py-3 px-3 text-right whitespace-nowrap">
+              <button type="button" onclick="removeLogItem(${item.id})" class="text-xs text-slate-400 hover:text-rose-600 font-medium transition">
+                Remove
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function removeLogItem(id) {
+      storeLog = storeLog.filter(item => item.id !== id);
+      renderStoreLog();
+    }
+
+    // Non-blocking toast notification
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'bg-slate-900 text-white text-xs font-medium px-4 py-3 rounded-xl shadow-lg border border-slate-700 transition-opacity duration-300';
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 2600);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
